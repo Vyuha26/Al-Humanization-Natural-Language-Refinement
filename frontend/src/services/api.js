@@ -1,0 +1,11 @@
+const BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+async function request(path, options) {
+  let response;
+  try { response = await fetch(`${BASE}${path}`, options); }
+  catch { throw new Error('Could not reach the HumanizeAI server. Check that the backend is running.'); }
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(payload.detail || 'The request could not be completed. Please try again.');
+  return payload;
+}
+export const humanizeText = (data) => request('/api/humanize', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
+export const extractDocument = (file) => { const data = new FormData(); data.append('file',file); return request('/api/extract-document',{method:'POST',body:data}); };
