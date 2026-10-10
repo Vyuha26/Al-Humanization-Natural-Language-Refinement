@@ -1,18 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
-import { ArrowDown, ArrowRight, Check, ChevronDown, Clipboard, ExternalLink, Feather, FileText, FileUp, Key, LoaderCircle, Menu, RotateCcw, Settings, ShieldCheck, Sparkles, Upload, X, Zap } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { ArrowDown, ArrowRight, Check, ChevronDown, Clipboard, Feather, FileText, FileUp, LoaderCircle, Menu, RotateCcw, ShieldCheck, Sparkles, Upload, X } from 'lucide-react';
 import { extractDocument, humanizeText } from './services/api';
 import './App.css';
 
 const contexts = ['General Writing', 'Professional Communication', 'Academic Writing', 'Reports and Summaries', 'Interview Questions', 'Candidate Communication', 'Business Documents'];
 const tones = ['Natural', 'Professional', 'Conversational', 'Polished', 'Concise'];
-const geminiModels = [
-  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash (Recommended)' },
-  { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash' }
-];
-const openaiModels = [
-  { id: 'gpt-4o-mini', name: 'GPT-4o mini' },
-  { id: 'gpt-4o', name: 'GPT-4o' }
-];
 
 const count = (s) => s.trim() ? s.trim().split(/\s+/).length : 0;
 
@@ -30,39 +22,8 @@ export default function App() {
   const [file, setFile] = useState(null);
   const [drag, setDrag] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-
-  // AI Provider settings
-  const [provider, setProvider] = useState(() => localStorage.getItem('h_provider') || 'gemini');
-  const [model, setModel] = useState(() => {
-    const saved = localStorage.getItem('h_model');
-    if (!saved || saved === 'gemini-1.5-flash' || saved === 'gemini-2.0-flash') {
-      return 'gemini-2.5-flash';
-    }
-    return saved;
-  });
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('h_key') || '');
-  const [showKey, setShowKey] = useState(false);
 
   const picker = useRef(null);
-
-  useEffect(() => {
-    if (provider === 'gemini' && (model === 'gemini-1.5-flash' || model === 'gemini-2.0-flash' || !model)) {
-      setModel('gemini-2.5-flash');
-    }
-    localStorage.setItem('h_provider', provider);
-    localStorage.setItem('h_model', model === 'gemini-1.5-flash' ? 'gemini-2.5-flash' : model);
-    localStorage.setItem('h_key', apiKey);
-  }, [provider, model, apiKey]);
-
-  const handleProviderChange = (newProvider) => {
-    setProvider(newProvider);
-    if (newProvider === 'gemini') {
-      setModel('gemini-2.5-flash');
-    } else {
-      setModel('gpt-4o-mini');
-    }
-  };
 
   async function run() {
     if (!input.trim()) {
@@ -77,10 +38,7 @@ export default function App() {
         text: input,
         context,
         tone,
-        minimal_rewrite: minimal,
-        provider: provider || 'gemini',
-        model: model || undefined,
-        api_key: apiKey.trim() || undefined
+        minimal_rewrite: minimal
       });
       setOutput(data.humanized_text);
       setResult(data);
@@ -167,111 +125,14 @@ export default function App() {
           <a href="#how">How It Works</a>
         </nav>
 
-        <div className="nav-actions">
-          <button
-            className={`settings-pill-btn ${provider === 'gemini' ? 'gemini-active' : ''}`}
-            onClick={() => setShowSettings(!showSettings)}
-            title="Configure Gemini / AI Provider"
-          >
-            <Sparkles size={14} className="spark-icon" />
-            <span>{provider === 'gemini' ? 'Google Gemini' : 'OpenAI'}</span>
-            <Settings size={13} />
-          </button>
-          <a className="nav-cta" href="#workspace">Try it free <ArrowRight size={16} /></a>
-        </div>
+        <a className="nav-cta" href="#workspace">Try it free <ArrowRight size={16} /></a>
       </header>
-
-      {/* AI Settings Modal */}
-      {showSettings && (
-        <div className="settings-overlay" onClick={() => setShowSettings(false)}>
-          <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="settings-head">
-              <div className="settings-title">
-                <Sparkles size={18} className="gemini-sparkle" />
-                <h3>AI Provider & Model Settings</h3>
-              </div>
-              <button className="close-modal-btn" onClick={() => setShowSettings(false)}><X size={18} /></button>
-            </div>
-
-            <div className="settings-body">
-              <div className="settings-field">
-                <label>Select AI Engine</label>
-                <div className="provider-options">
-                  <button
-                    type="button"
-                    className={`provider-card ${provider === 'gemini' ? 'selected' : ''}`}
-                    onClick={() => handleProviderChange('gemini')}
-                  >
-                    <div className="provider-badge">Recommended</div>
-                    <div className="provider-name">Google Gemini</div>
-                    <small>Gemini 2.0 Flash • Ultra fast & accurate</small>
-                  </button>
-                  <button
-                    type="button"
-                    className={`provider-card ${provider === 'openai' ? 'selected' : ''}`}
-                    onClick={() => handleProviderChange('openai')}
-                  >
-                    <div className="provider-name">OpenAI</div>
-                    <small>GPT-4o mini • Standard engine</small>
-                  </button>
-                </div>
-              </div>
-
-              <div className="settings-field">
-                <label>Model Version</label>
-                <select value={model} onChange={(e) => setModel(e.target.value)} className="settings-select">
-                  {(provider === 'gemini' ? geminiModels : openaiModels).map((m) => (
-                    <option key={m.id} value={m.id}>{m.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="settings-field">
-                <div className="field-label-row">
-                  <label>API Key (Optional)</label>
-                  {provider === 'gemini' && (
-                    <a
-                      href="https://aistudio.google.com/app/apikey"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="api-key-link"
-                    >
-                      Get free Gemini key <ExternalLink size={11} />
-                    </a>
-                  )}
-                </div>
-                <div className="key-input-wrapper">
-                  <input
-                    type={showKey ? 'text' : 'password'}
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    placeholder={provider === 'gemini' ? 'AIzaSy... (or set GEMINI_API_KEY in backend/.env)' : 'sk-... (or set in backend/.env)'}
-                    className="settings-input"
-                  />
-                  <button type="button" className="key-toggle" onClick={() => setShowKey(!showKey)}>
-                    {showKey ? 'Hide' : 'Show'}
-                  </button>
-                </div>
-                <small className="settings-hint">
-                  Saved securely in your browser session. If left blank, HumanizeAI uses your server <code>backend/.env</code> key.
-                </small>
-              </div>
-            </div>
-
-            <div className="settings-footer">
-              <button className="button primary" onClick={() => setShowSettings(false)}>
-                Save & Continue
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <main id="home">
         <section className="hero">
           <div className="hero-copy">
             <div className="eyebrow">
-              <span className="eyebrow-dot" /> Powered by {provider === 'gemini' ? 'Google Gemini 2.0' : 'Advanced AI'}
+              <span className="eyebrow-dot" /> A thoughtful way to write
             </div>
             <h1>Make every word<br />feel more <em>human.</em></h1>
             <p>Refine robotic or awkward writing into clear, natural language. Your meaning, facts, and intent stay at the heart of every edit.</p>
@@ -302,12 +163,7 @@ export default function App() {
               <div className="eyebrow">YOUR WRITING STUDIO</div>
               <h2>A little more you, in every sentence.</h2>
             </div>
-            <div className="studio-badges">
-              <button className="engine-badge" onClick={() => setShowSettings(true)}>
-                <Zap size={13} /> {provider === 'gemini' ? `Gemini (${model})` : `OpenAI (${model})`}
-              </button>
-              <span className="secure-label"><ShieldCheck size={15} /> Private by design</span>
-            </div>
+            <span className="secure-label"><ShieldCheck size={15} /> Private by design</span>
           </div>
 
           <div className="workspace-card">
@@ -456,7 +312,7 @@ export default function App() {
                   {busy ? (
                     <><LoaderCircle className="spin" size={16} /> Humanizing…</>
                   ) : (
-                    <><Sparkles size={16} /> Humanize with {provider === 'gemini' ? 'Gemini' : 'AI'}</>
+                    <><Sparkles size={16} /> Humanize text</>
                   )}
                 </button>
               </div>
@@ -513,7 +369,7 @@ export default function App() {
           <div className="steps">
             {[
               ['01', 'Bring your words', 'Paste text or upload a document. Review extracted content before it goes anywhere.'],
-              ['02', 'Choose Gemini or OpenAI', 'Select your tone and context, then let Google Gemini refine clarity and flow.'],
+              ['02', 'Find your voice', 'Choose a context and tone, then let HumanizeAI improve clarity and flow.'],
               ['03', 'Review with care', 'Check the independent consistency review, then copy or download what feels right.']
             ].map(([n, t, d]) => (
               <article className="step" key={n}>
@@ -533,11 +389,9 @@ export default function App() {
         </a>
         <p>Clearer writing. Still yours.</p>
         <div className="footer-meta">
-          <span>Google Gemini & OpenAI Integration</span>
-          <span>·</span>
-          <span>FastAPI · React</span>
+          <span>FastAPI · React · AI-Assisted</span>
         </div>
-        <small>Privacy note: Text is processed by your configured AI provider and is not permanently saved by this app.</small>
+        <small>Privacy note: Text is processed securely and is not permanently saved by this app.</small>
       </footer>
     </div>
   );
