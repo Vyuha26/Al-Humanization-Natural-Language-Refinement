@@ -1,0 +1,34 @@
+======================================================================
+Member 3: Dual-Pane Writing Studio, Word Diffing & Client Analytics
+======================================================================
+
+HOW TO PUSH THESE FILES TO GITHUB:
+1. Clone the project repository if not already cloned:
+   git clone https://github.com/saisreemanth03/Ai-Humanize.git
+   cd Ai-Humanize
+
+2. Set your personal GitHub author name and email:
+   git config user.name "Your Name"
+   git config user.email "your_github_email@example.com"
+
+3. Create and switch to your feature branch:
+   git checkout -b feature/studio-diff-inspection
+
+4. Copy the files in this zip into your local repository root folder.
+   (The subfolder structure backend/... and frontend/... matches perfectly!)
+
+5. Stage your assigned files:
+   git add frontend/src/components/StudioWorkspace.jsx
+   git add frontend/src/components/InspectionDrawer.jsx
+   git add frontend/src/utils/diffHelper.js
+   git add frontend/src/utils/constants.js
+   git add frontend/src/pages/studio/TextStudio.jsx
+
+6. Commit your changes:
+   git commit -m "feat(studio): implement dual-pane workspace, visual word diff engine, and inspection drawer"
+
+7. Push to the shared GitHub repository:
+   git push -u origin feature/studio-diff-inspection
+
+8. Go to GitHub, click 'Compare & pull request', and merge into main!
+======================================================================
